@@ -1,4 +1,4 @@
-# Holy Hack - repo team Goon Goon Array
+# Holy Hack - repo team Lorem Ipsum
 Welcome to your personal Holy Hack GitHub repository! This serves as a central hub for submitting your code to be reviewed during the judging sessions. You should modify this README file to better explain your project to the judges, making it easier for them to understand your work.
 
 ## 🚀 Getting Started
