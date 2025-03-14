@@ -13,14 +13,17 @@ class SausProvider {
 
   static const baseUrl = 'https://holyhack.breitburg.com/saus';
 
-  Future<String> ideate(String value) async {
+  Future<(String title, String description)> ideate(String value) async {
     log('Ideating...');
     final response = await dio.get(
       '$baseUrl/ideate',
       queryParameters: {'idea': value},
     );
 
-    return response.data['description'];
+    return (
+      response.data['title'] as String,
+      response.data['description'] as String,
+    );
   }
 
   Future<Uint8List> imagine(String description) async {
@@ -44,7 +47,10 @@ class SausProvider {
     return List<String>.from(response.data['suggestions']);
   }
 
-  Future<String> modify(String description, String modification) async {
+  Future<(String title, String description)> modify(
+    String description,
+    String modification,
+  ) async {
     log('Modifying ideation...');
     final response = await dio.get(
       '$baseUrl/modify',
@@ -54,7 +60,10 @@ class SausProvider {
       },
     );
 
-    return response.data['description'];
+    return (
+      response.data['title'] as String,
+      response.data['description'] as String,
+    );
   }
 
   /// Function to stream recipe data from separate API endpoints

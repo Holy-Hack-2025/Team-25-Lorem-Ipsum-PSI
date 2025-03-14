@@ -12,8 +12,13 @@ import 'package:provider/provider.dart';
 
 class MealBuilderScreen extends StatefulWidget {
   final String initialDescription;
+  final String initialTitle;
 
-  const MealBuilderScreen({super.key, required this.initialDescription});
+  const MealBuilderScreen({
+    super.key,
+    required this.initialDescription,
+    required this.initialTitle,
+  });
 
   @override
   State<MealBuilderScreen> createState() => _MealBuilderScreenState();
@@ -21,9 +26,10 @@ class MealBuilderScreen extends StatefulWidget {
 
 class _MealBuilderScreenState extends State<MealBuilderScreen> {
   final _promptController = TextEditingController();
-  late String _description = widget.initialDescription;
 
-  String? title;
+  late String _description = widget.initialDescription;
+  late String _title = widget.initialTitle;
+
   Uint8List? _imageBytes;
   List<String> _suggestions = [];
 
@@ -68,10 +74,14 @@ class _MealBuilderScreenState extends State<MealBuilderScreen> {
                     suggestions: _suggestions,
                     isProcessing: _isProcessing,
                     onSuggestionTap: (value) async {
-                      _description = await context.read<SausProvider>().modify(
-                        _description,
-                        'Add $value',
-                      );
+                      final (title, description) = await context
+                          .read<SausProvider>()
+                          .modify(_description, 'Add $value');
+
+                      setState(() {
+                        _title = title;
+                        _description = description;
+                      });
 
                       _fetchImage();
                       _fetchSuggestions();
@@ -82,9 +92,9 @@ class _MealBuilderScreenState extends State<MealBuilderScreen> {
                       context.go(
                         '/create',
                         extra: MealIdea(
+                          title: _title,
                           description: _description,
                           imageBytes: _imageBytes!,
-                          title: 'No Name',
                         ),
                       );
                     },
@@ -98,10 +108,15 @@ class _MealBuilderScreenState extends State<MealBuilderScreen> {
                   if (value.isEmpty) return;
                   _promptController.clear();
 
-                  _description = await context.read<SausProvider>().modify(
-                    _description,
-                    value,
-                  );
+                  final (title, description) = await context
+                      .read<SausProvider>()
+                      .modify(_description, value);
+
+                  setState(() {
+                    _title = title;
+                    _description = description;
+                  });
+
                   _fetchSuggestions();
                   _fetchImage();
                 },
@@ -298,12 +313,7 @@ class _PlateOrchestraState extends State<PlateOrchestra>
     return AnimatedBuilder(
       animation: _suggestionController,
       builder: (context, child) {
-        final position =
-            2 *
-                pi *
-                index /
-                (widget.suggestions.length - _suggestionCurve.value) +
-            pi / 3;
+        final position = 2 * pi * index / widget.suggestions.length + pi / 3;
 
         final double factor =
             index == _currentAnimationIndex ? (1 - _suggestionCurve.value) : 1;

@@ -17,8 +17,11 @@ final _router = GoRouter(
     GoRoute(
       path: '/builder',
       builder:
-          (context, state) =>
-              MealBuilderScreen(initialDescription: state.extra as String),
+          (context, state) => MealBuilderScreen(
+            initialTitle: (state.extra as (String name, String description)).$1,
+            initialDescription:
+                (state.extra as (String name, String description)).$2,
+          ),
     ),
     GoRoute(
       path: '/create',

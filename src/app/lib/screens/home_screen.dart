@@ -47,11 +47,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     setState(() {});
 
-                    final description = await _preprartionFuture;
-                    print('Got description: $description');
+                    final (title, description) = await _preprartionFuture;
+                    print('$title: $description');
 
                     if (!context.mounted) return;
-                    context.push('/builder', extra: description);
+                    context.push('/builder', extra: (title, description));
                   },
                   decoration: InputDecoration(
                     hintText: 'Describe your meal',
