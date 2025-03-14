@@ -237,7 +237,7 @@ async def estimate_costs(ingredients: str, number_of_servings: int, minutes_requ
     cost_estimate_parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
             "CostEstimate",
-            ingredients=(dict[str, str], ...),
+            ingredients=(dict[str, str], Field(description="The ingredients and description of their cost as one string")),
             total_cost=(float, ...),
         )
     )
