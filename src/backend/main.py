@@ -12,7 +12,7 @@ from base64 import b64decode
 
 load_dotenv()
 
-small_model = ChatGroq(model_name="llama-3.3-70b-versatile")
+small_model = ChatAnthropic(model_name="claude-3-5-haiku-latest")
 large_model = ChatAnthropic(model_name="claude-3-7-sonnet-latest")
 
 runware = Runware(api_key=environ.get("RUNWARE_KEY"))
