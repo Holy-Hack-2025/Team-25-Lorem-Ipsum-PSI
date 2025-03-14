@@ -22,6 +22,7 @@ small_model = ChatGroq(
 )
 large_model = ChatAnthropic(
     model_name=environ.get("LARGE_MODEL_NAME"),
+    model_kwargs={"response_format": {"type": "json_object"}},
     max_tokens_to_sample=8000,  # 8000 so that the model can do chain of thought
     temperature=0.2
 )
