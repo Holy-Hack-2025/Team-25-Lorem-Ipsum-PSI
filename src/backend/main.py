@@ -24,6 +24,8 @@ runware = Runware(api_key=environ.get("RUNWARE_KEY"))
 
 app = FastAPI()
 
+LABOR_COST = 12  # EUR12 per hour, assuming the chef can make more than one dish in an hour
+
 
 @app.get("/saus/imagine")
 async def image(description: str):
@@ -198,7 +200,7 @@ async def recipe_crafter(description: str):
 
     yield "event: nutrition\ndata: " + json.dumps(
         {
-            "ingredients": nutrition_response.ingredients,
+            # "ingredients": nutrition_response.ingredients,
             "total_calories": nutrition_response.total_calories,
             "total_fat": nutrition_response.total_fat,
             "total_protein": nutrition_response.total_protein,
@@ -227,18 +229,18 @@ async def recipe_crafter(description: str):
 
     cost_estimate_response = await cost_estimate_chain.ainvoke(
         {
-            "ingredients": recipe_response.ingredients,
+            # "ingredients": recipe_response.ingredients,
             "servings": recipe_response.number_of_servings,
         }
     )
 
     yield "event: cost\ndata: " + json.dumps(
         {
-            "ingredients": cost_estimate_response.ingredients,
+            # "ingredients": cost_estimate_response.ingredients,
             "total_ingredients_cost": cost_estimate_response.total_cost,
-            "total_cost_labour": 12 * recipe_response.minutes_required / 60,
+            "total_cost_labour": LABOR_COST * recipe_response.minutes_required / 60,
             "total_cost": cost_estimate_response.total_cost
-            + 12 * recipe_response.minutes_required / 60,
+            + LABOR_COST * recipe_response.minutes_required / 60,
         }
     ) + "\n\n"
 
