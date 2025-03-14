@@ -194,7 +194,7 @@ async def estimate_nutrition(ingredients: str, number_of_servings: int):
     nutrition_parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
             "NutritionFacts",
-            ingredients=(dict[str, str], Field(description="The ingredients and description of their nutritional values as one string"))
+            ingredients=(dict[str, str], Field(description="The ingredients and description of their nutritional values as one string")),
             total_calories=(float, ...),
             total_fat=(float, ...),
             total_protein=(float, ...),
