@@ -51,7 +51,6 @@ async def image(description: str):
         numberResults=1,
         strength=1,
         CFGScale=30,
-        steps=10,
     )
 
     images = await runware.imageInference(requestImage=description)
@@ -121,6 +120,7 @@ async def modify(description: str, modification: str):
         }
     )
     return {"description": response.refined_description}
+
 
 
 if __name__ == "__main__":
