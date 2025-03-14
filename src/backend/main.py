@@ -142,7 +142,7 @@ async def modify(description: str, modification: str):
     }
 
 
-@app.get("/craft/recipe")
+@app.get("/saus/craft/recipe")
 async def craft_recipe(description: str):
     """
     Craft a step-by-step recipe from a description with ingredients,
@@ -178,7 +178,7 @@ async def craft_recipe(description: str):
     }
 
 
-@app.get("/craft/nutrition")
+@app.get("/saus/craft/nutrition")
 async def estimate_nutrition(ingredients: List[str], number_of_servings: int):
     """
     Estimate nutrition facts for a given list of ingredients and number of servings.
@@ -221,7 +221,7 @@ async def estimate_nutrition(ingredients: List[str], number_of_servings: int):
     }
 
 
-@app.get("/craft/cost")
+@app.get("/saus/craft/cost")
 async def estimate_costs(ingredients: List[str], number_of_servings: int, minutes_required: int):
     """
     Estimate costs for a given list of ingredients, number of servings, and time required.
