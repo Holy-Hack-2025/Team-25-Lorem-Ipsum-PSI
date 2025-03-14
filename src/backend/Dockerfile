@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app/
 
 # Install required packages
-RUN pip install --no-cache-dir fastapi uvicorn runware anthropic python-dotenv
+RUN pip install --no-cache-dir fastapi uvicorn runware anthropic python-dotenv groq
 
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
