@@ -82,7 +82,7 @@ async def suggestions(description: str):
 
 
 @app.get("/saus/ideate")
-def description(idea: str):
+async def ideate(idea: str):
     parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model("Description", description=(str, ...))
     )
@@ -95,12 +95,12 @@ def description(idea: str):
 
     chain = prompt | small_model | parser
 
-    response = chain.invoke({"idea": idea})
+    response = chain.ainvoke({"idea": idea})
     return {"description": response.description}
 
 
 @app.get("/saus/modify")
-def description(description: str, modification: str):
+async def modify(description: str, modification: str):
     parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
             "RefinedDescription", refined_description=(str, ...)
@@ -115,7 +115,7 @@ def description(description: str, modification: str):
 
     chain = prompt | small_model | parser
 
-    response = chain.invoke(
+    response = chain.ainvoke(
         {
             "idea": f"Their original dish: {description}\n\nModifications they asked for: {modification}"
         }
