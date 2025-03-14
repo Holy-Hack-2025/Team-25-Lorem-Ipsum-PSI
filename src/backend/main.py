@@ -4,6 +4,7 @@ from runware import Runware, IImageInference
 from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import PromptTemplate
+from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers.pydantic import PydanticOutputParser
 from pydantic import create_model as create_pydantic_model
 from dotenv import load_dotenv
@@ -11,6 +12,11 @@ from os import environ
 from base64 import b64decode
 import json
 from typing import List, Dict
+from json_repair import repair_json
+
+def wrapper_json_repair(data):
+    data.content = repair_json(data.content)
+    return data
 
 
 load_dotenv()
@@ -22,7 +28,6 @@ small_model = ChatGroq(
 )
 large_model = ChatAnthropic(
     model_name=environ.get("LARGE_MODEL_NAME"),
-    model_kwargs={"response_format": {"type": "json_object"}},
     max_tokens_to_sample=8000,  # 8000 so that the model can do chain of thought
     temperature=0.2
 )
@@ -169,7 +174,7 @@ async def craft_recipe(description: str):
         },
     )
 
-    recipe_chain = recipe_prompt | large_model | recipe_parser
+    recipe_chain = recipe_prompt | large_model | RunnableLambda(wrapper_json_repair) | recipe_parser
 
     recipe_response = await recipe_chain.ainvoke({"description": description})
 
@@ -206,7 +211,7 @@ async def estimate_nutrition(ingredients: str, number_of_servings: int):
         },
     )
 
-    nutrition_chain = nutrition_prompt | large_model | nutrition_parser
+    nutrition_chain = nutrition_prompt | large_model | RunnableLambda(wrapper_json_repair) | nutrition_parser
 
     nutrition_response = await nutrition_chain.ainvoke(
         {
@@ -245,7 +250,7 @@ async def estimate_costs(ingredients: str, number_of_servings: int, minutes_requ
         },
     )
 
-    cost_estimate_chain = cost_estimate_prompt | large_model | cost_estimate_parser
+    cost_estimate_chain = cost_estimate_prompt | large_model | RunnableLambda(wrapper_json_repair) | cost_estimate_parser
 
     cost_estimate_response = await cost_estimate_chain.ainvoke(
         {
