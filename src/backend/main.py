@@ -59,8 +59,8 @@ async def image(dish_description: str):
         height=512,
         outputFormat="JPG",
         outputType="base64Data",
-        seedImage="plate.png",
-        maskImage="invert-mask.png",
+        seedImage="plate-new.png", 
+        maskImage="mask-new.png",
         numberResults=1
     )
 
