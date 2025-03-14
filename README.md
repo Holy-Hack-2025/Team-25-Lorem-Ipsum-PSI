@@ -155,3 +155,62 @@ You can find example API requests in the `requests/` directory:
 - `nutrition.http` - Examples for nutritional estimation
 - `recipe.http` - Examples for recipe generation
 - `suggest.http` - Examples for ingredient suggestions
+
+
+# Saus Frontend
+
+A Flutter-based mobile application that uses AI to generate personalized meal ideas, recipes, nutrition facts, and delivery options based on your food preferences.
+
+## Features
+
+- **AI-Powered Meal Generation**: Describe what you want to eat in natural language, and the app will generate custom meal ideas
+- **Complete Recipes**: Get detailed ingredients and step-by-step instructions for each meal
+- **Nutrition Information**: View calories, carbs, protein, fat, and sugar content for each meal
+- **Cost Estimates**: See approximate costs for ingredients and preparation
+- **Meal Customization**: Modify generated meal ideas to match your preferences
+- **Delivery Tracking**: Order your meal and track delivery on an interactive map
+
+## Tech Stack
+
+- **Flutter**: Cross-platform UI framework
+- **Dart**: Programming language
+- **Provider**: State management
+- **go_router**: Navigation and routing
+- **dio**: API communication
+- **flutter_map**: Interactive maps for delivery tracking
+- **slang**: Internationalization
+
+## Getting Started
+
+### Prerequisites
+
+- Flutter SDK (version ^3.7.0)
+- Dart SDK
+- Android Studio or Xcode for device emulation
+
+### Installation
+
+1. Clone the repository
+   ```
+   git clone https://github.com/breitburg/holyhack.git
+   cd holyhack/src/app
+   ```
+
+2. Install dependencies
+   ```
+   flutter pub get
+   ```
+
+3. Run the app
+   ```
+   flutter run
+   ```
+
+## Project Structure
+
+- `lib/models/`: Data models for meals, recipes, nutrition facts, and cost estimates
+- `lib/providers/`: State management for kitchen features and AI services
+- `lib/screens/`: UI screens for home, meal builder, recipe view, and delivery map
+- `lib/widgets/`: Reusable UI components
+- `lib/helpers/`: Utility functions and theming
+- `lib/i18n/`: Internationalization resources
