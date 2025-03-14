@@ -26,7 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               'What would you like to eat?',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.headlineMedium,
+              textAlign: TextAlign.center,
             ),
             const Gap(30),
             FutureBuilder(

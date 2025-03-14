@@ -233,7 +233,7 @@ class _PlateOrchestraState extends State<PlateOrchestra>
                 for (final suggestion in widget.suggestions)
                   _buildPlateSuggestions(
                     suggestion,
-                    onAnimationEnd:
+                    onAnimationStart:
                         () => widget.onSuggestionTap?.call(suggestion),
                   ),
               ],
@@ -252,29 +252,26 @@ class _PlateOrchestraState extends State<PlateOrchestra>
     final index = widget.suggestions.indexOf(suggestion);
     final position = 2 * pi * index / widget.suggestions.length;
 
-    final child = ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 100),
-      child: Material(
-        clipBehavior: Clip.antiAlias,
-        type: MaterialType.button,
-        color: Theme.of(context).colorScheme.secondaryNetrual,
-        borderRadius: BorderRadius.circular(100),
-        child: InkWell(
-          onTap: () {
-            onAnimationStart?.call();
-            setState(() {
-              _currentAnimationIndex = index;
-              _suggestionController
-                  .forward(from: 0)
-                  .then((_) => onAnimationEnd?.call());
-            });
-          },
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-            child: Text(
-              suggestion,
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
+    final child = Material(
+      clipBehavior: Clip.antiAlias,
+      type: MaterialType.button,
+      color: Theme.of(context).colorScheme.secondaryNetrual,
+      borderRadius: BorderRadius.circular(100),
+      child: InkWell(
+        onTap: () {
+          onAnimationStart?.call();
+          setState(() {
+            _currentAnimationIndex = index;
+            _suggestionController
+                .forward(from: 0)
+                .then((_) => onAnimationEnd?.call());
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          child: Text(
+            suggestion,
+            style: Theme.of(context).textTheme.bodyLarge,
           ),
         ),
       ),
