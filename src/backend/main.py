@@ -14,17 +14,22 @@ import json
 
 load_dotenv()
 
-small_model = ChatGroq(model_name=environ.get("SMALL_MODEL_NAME"))
+small_model = ChatGroq(
+    model_name=environ.get("SMALL_MODEL_NAME"),
+    model_kwargs={"response_format": {"type": "json_object"}},
+)
 large_model = ChatAnthropic(
-    model_name=environ.get("LARGE_MODEL_NAME"), 
-    max_tokens_to_sample=8000 # 8000 so that the model can do chain of thought
-)  
+    model_name=environ.get("LARGE_MODEL_NAME"),
+    max_tokens_to_sample=8000,  # 8000 so that the model can do chain of thought
+)
 
 runware = Runware(api_key=environ.get("RUNWARE_KEY"))
 
 app = FastAPI()
 
-LABOR_COST = 12  # EUR12 per hour, assuming the chef can make more than one dish in an hour
+LABOR_COST = (
+    12  # EUR12 per hour, assuming the chef can make more than one dish in an hour
+)
 
 
 @app.get("/saus/imagine")
