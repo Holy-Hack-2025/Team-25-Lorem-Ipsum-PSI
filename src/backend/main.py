@@ -12,8 +12,12 @@ from base64 import b64decode
 
 load_dotenv()
 
-small_model = ChatAnthropic(model_name="claude-3-5-haiku-latest")
-large_model = ChatAnthropic(model_name="claude-3-7-sonnet-latest")
+small_model = ChatAnthropic(
+    model_name=environ.get("SMALL_MODEL_NAME"), api_key=environ.get("ANTHROPIC_API_KEY")
+)
+large_model = ChatAnthropic(
+    model_name=environ.get("LARGE_MODEL_NAME"), api_key=environ.get("ANTHROPIC_API_KEY")
+)
 
 runware = Runware(api_key=environ.get("RUNWARE_KEY"))
 
