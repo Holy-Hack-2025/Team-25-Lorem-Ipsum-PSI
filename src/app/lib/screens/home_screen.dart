@@ -1,5 +1,5 @@
 import 'package:app/helpers/theming.dart';
-import 'package:app/providers/kitchen.dart';
+import 'package:app/providers/saus.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
@@ -19,17 +19,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(40),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               'What would you like to eat?',
               style: Theme.of(context).textTheme.headlineMedium,
               textAlign: TextAlign.center,
             ),
-            const Gap(30),
+            const Gap(40),
             FutureBuilder(
               future: _preprartionFuture,
               builder: (context, snapshot) {
@@ -41,20 +41,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   onSubmitted: (value) async {
                     if (value.isEmpty) return;
 
-                    final description = await context
-                        .read<KitchenProvider>()
-                        .ideate(value);
+                    _preprartionFuture = context.read<SausProvider>().ideate(
+                      value,
+                    );
 
                     setState(() {});
 
+                    final description = await _preprartionFuture;
                     print('Got description: $description');
 
                     if (!context.mounted) return;
                     context.push('/builder', extra: description);
                   },
                   decoration: InputDecoration(
-                    labelText: 'pizza, sushi, etc.',
-                    labelStyle: Theme.of(context).textTheme.bodyLarge50,
+                    hintText: 'Describe your meal',
+                    hintStyle: Theme.of(context).textTheme.bodyLarge50,
                     filled: true,
                     fillColor: const Color(0xFFEEEEEE),
                     border: OutlineInputBorder(

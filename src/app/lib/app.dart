@@ -1,7 +1,12 @@
 import 'package:app/helpers/theming.dart';
 import 'package:app/i18n/strings.g.dart';
+import 'package:app/models/meal.dart';
+import 'package:app/models/recipe.dart';
+import 'package:app/screens/delivery_map_screen.dart';
 import 'package:app/screens/home_screen.dart';
 import 'package:app/screens/meal_builder_screen.dart';
+import 'package:app/screens/meal_creation_screen.dart';
+import 'package:app/screens/recipe_view_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +19,19 @@ final _router = GoRouter(
       builder:
           (context, state) =>
               MealBuilderScreen(initialDescription: state.extra as String),
+    ),
+    GoRoute(
+      path: '/create',
+      builder:
+          (context, state) => MealCreationScreen(idea: state.extra as MealIdea),
+    ),
+    GoRoute(
+      path: '/recipe',
+      builder: (context, state) => RecipeViewScreen(state.extra as Recipe),
+    ),
+    GoRoute(
+      path: '/delivery',
+      builder: (context, state) => DeliveryMapScreen(state.extra as MealIdea),
     ),
   ],
 );

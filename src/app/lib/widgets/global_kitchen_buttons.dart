@@ -63,7 +63,7 @@ class GlobalKitchenActionButton extends StatelessWidget {
       backgroundColor: backgroundColor,
       foregroundColor: foregroundColor,
       child: ConstrainedBox(
-        constraints: const BoxConstraints.expand(width: 60, height: 40),
+        constraints: const BoxConstraints.expand(width: 40, height: 40),
         child: Center(child: child),
       ),
     );
