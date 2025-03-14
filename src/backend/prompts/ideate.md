@@ -15,4 +15,6 @@ For example, if I mention "salmon and asparagus," don't just list recipes or opt
 
 {idea}
 
+## Formatting Instructions
+
 {format_instructions}
