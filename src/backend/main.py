@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from os import environ
 from base64 import b64decode
 import json
+from typing import List, Dict
 
 
 load_dotenv()
@@ -141,8 +142,12 @@ async def modify(description: str, modification: str):
     }
 
 
-async def recipe_crafter(description: str):
-    # Craft a step-by-step recipe from a description with ingredients in a separate array and steps in a separate array
+@app.get("/craft/recipe")
+async def craft_recipe(description: str):
+    """
+    Craft a step-by-step recipe from a description with ingredients,
+    steps, time required, and servings.
+    """
     recipe_parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
             "Recipe",
@@ -165,15 +170,19 @@ async def recipe_crafter(description: str):
 
     recipe_response = await recipe_chain.ainvoke({"description": description})
 
-    yield "event: recipe\ndata: " + json.dumps(
-        {
-            "ingredients": recipe_response.ingredients,
-            "steps": recipe_response.steps,
-            "minutes_required": recipe_response.minutes_required,
-            "number_of_servings": recipe_response.number_of_servings,
-        }
-    ) + "\n\n"
+    return {
+        "ingredients": recipe_response.ingredients,
+        "steps": recipe_response.steps,
+        "minutes_required": recipe_response.minutes_required,
+        "number_of_servings": recipe_response.number_of_servings,
+    }
 
+
+@app.get("/craft/nutrition")
+async def estimate_nutrition(ingredients: List[str], number_of_servings: int):
+    """
+    Estimate nutrition facts for a given list of ingredients and number of servings.
+    """
     nutrition_parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
             "NutritionFacts",
@@ -198,22 +207,25 @@ async def recipe_crafter(description: str):
 
     nutrition_response = await nutrition_chain.ainvoke(
         {
-            "ingredients": recipe_response.ingredients,
-            "servings": recipe_response.number_of_servings,
+            "ingredients": ingredients,
+            "servings": number_of_servings,
         }
     )
 
-    yield "event: nutrition\ndata: " + json.dumps(
-        {
-            # "ingredients": nutrition_response.ingredients,
-            "total_calories": nutrition_response.total_calories,
-            "total_fat": nutrition_response.total_fat,
-            "total_protein": nutrition_response.total_protein,
-            "total_carbs": nutrition_response.total_carbs,
-            "total_sugar": nutrition_response.total_sugar,
-        }
-    ) + "\n\n"
+    return {
+        "total_calories": nutrition_response.total_calories,
+        "total_fat": nutrition_response.total_fat,
+        "total_protein": nutrition_response.total_protein,
+        "total_carbs": nutrition_response.total_carbs,
+        "total_sugar": nutrition_response.total_sugar,
+    }
 
+
+@app.get("/craft/cost")
+async def estimate_costs(ingredients: List[str], number_of_servings: int, minutes_required: int):
+    """
+    Estimate costs for a given list of ingredients, number of servings, and time required.
+    """
     cost_estimate_parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
             "CostEstimate",
@@ -234,20 +246,41 @@ async def recipe_crafter(description: str):
 
     cost_estimate_response = await cost_estimate_chain.ainvoke(
         {
-            "ingredients": recipe_response.ingredients,
-            "servings": recipe_response.number_of_servings,
+            "ingredients": ingredients,
+            "servings": number_of_servings,
         }
     )
 
-    yield "event: cost\ndata: " + json.dumps(
-        {
-            # "ingredients": cost_estimate_response.ingredients,
-            "total_ingredients_cost": cost_estimate_response.total_cost,
-            "total_cost_labour": LABOR_COST * recipe_response.minutes_required / 60,
-            "total_cost": cost_estimate_response.total_cost
-            + LABOR_COST * recipe_response.minutes_required / 60,
-        }
-    ) + "\n\n"
+    labor_cost = LABOR_COST * minutes_required / 60
+    total_cost = cost_estimate_response.total_cost + labor_cost
+
+    return {
+        "total_ingredients_cost": cost_estimate_response.total_cost,
+        "total_cost_labour": labor_cost,
+        "total_cost": total_cost,
+    }
+
+
+# Keep the original streaming endpoint for backward compatibility
+async def recipe_crafter(description: str):
+    recipe_result = await craft_recipe(description)
+    
+    yield "event: recipe\ndata: " + json.dumps(recipe_result) + "\n\n"
+    
+    nutrition_result = await estimate_nutrition(
+        recipe_result["ingredients"], 
+        recipe_result["number_of_servings"]
+    )
+    
+    yield "event: nutrition\ndata: " + json.dumps(nutrition_result) + "\n\n"
+    
+    cost_result = await estimate_costs(
+        recipe_result["ingredients"],
+        recipe_result["number_of_servings"],
+        recipe_result["minutes_required"]
+    )
+    
+    yield "event: cost\ndata: " + json.dumps(cost_result) + "\n\n"
 
 
 @app.get("/saus/craft")
