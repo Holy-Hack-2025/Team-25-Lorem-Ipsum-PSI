@@ -23,12 +23,11 @@ def wrapper_json_repair(data):
     if type(decoded) == dict:
         return data
     elif type(decoded) == list:
-        data.content = json.dumps(decoded[0])
+        data.content = json.dumps(decoded[1])
         return data
     else:
         print("WHAT")
         return data
-    
 
 
 load_dotenv()
