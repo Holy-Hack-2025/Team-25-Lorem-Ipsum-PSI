@@ -7,6 +7,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers.pydantic import PydanticOutputParser
 from pydantic import create_model as create_pydantic_model
+from pydantic.fields import Field
 from dotenv import load_dotenv
 from os import environ
 from base64 import b64decode
@@ -185,7 +186,6 @@ async def craft_recipe(description: str):
         "number_of_servings": recipe_response.number_of_servings,
     }
 
-
 @app.get("/saus/craft/nutrition")
 async def estimate_nutrition(ingredients: str, number_of_servings: int):
     """
@@ -194,7 +194,7 @@ async def estimate_nutrition(ingredients: str, number_of_servings: int):
     nutrition_parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
             "NutritionFacts",
-            ingredients=(dict[str, str], ...),
+            ingredients=(dict[str, str], Field(description="The ingredients and description of their nutritional values as one string"))
             total_calories=(float, ...),
             total_fat=(float, ...),
             total_protein=(float, ...),
