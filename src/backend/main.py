@@ -17,7 +17,18 @@ from json_repair import repair_json
 
 def wrapper_json_repair(data):
     data.content = repair_json(data.content)
-    return data
+
+    decoded = json.loads(data.content)
+
+    if type(decoded) == dict:
+        return data
+    elif type(decoded) == list:
+        data.content = json.dumps(decoded[0])
+        return data
+    else:
+        print("WHAT")
+        return data
+    
 
 
 load_dotenv()
@@ -237,7 +248,7 @@ async def estimate_costs(ingredients: str, number_of_servings: int, minutes_requ
     cost_estimate_parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
             "CostEstimate",
-            # ingredients=(dict[str, float], Field(description="The ingredients and their costs")),
+            ingredients=(dict[str, float], Field(description="The ingredients and their costs")),
             total_cost=(float, ...),
         )
     )
