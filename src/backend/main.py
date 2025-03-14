@@ -1,9 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from runware import Runware, IImageInference
 import anthropic
 import json
 import os
 from dotenv import load_dotenv
+import base64
 
 load_dotenv()
 
@@ -23,6 +24,8 @@ app = FastAPI()
 async def image(dish_description: str):
     runware = Runware(api_key=runware_key)
     await runware.connect()
+
+    print(dish_description)
 
     # because the SDK does not support variables.
     message = client.messages.create(
@@ -55,7 +58,7 @@ async def image(dish_description: str):
         width=512,
         height=512,
         outputFormat="JPG",
-        outputType="URL",
+        outputType="base64Data",
         seedImage="plate.png",
         maskImage="invert-mask.png",
         numberResults=1
@@ -63,7 +66,12 @@ async def image(dish_description: str):
 
     images = await runware.imageInference(requestImage=description)
 
-    return {"url": images[0].imageURL, "detailed_description": message.content[0].text}
+    imagebase64 = images[0].imageBase64Data
+    image = base64.b64decode(imagebase64)
+
+    return Response(content=image, media_type="image/jpeg")
+
+
 
 
 
