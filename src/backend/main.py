@@ -18,6 +18,7 @@ load_dotenv()
 small_model = ChatGroq(
     model_name=environ.get("SMALL_MODEL_NAME"),
     model_kwargs={"response_format": {"type": "json_object"}},
+    temperature=0
 )
 large_model = ChatAnthropic(
     model_name=environ.get("LARGE_MODEL_NAME"),
