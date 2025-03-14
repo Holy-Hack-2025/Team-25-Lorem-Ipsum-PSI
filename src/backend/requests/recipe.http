@@ -1,0 +1,1 @@
+GET http://localhost:8000/craft/recipe?description=Spicy chicken curry with coconut rice
