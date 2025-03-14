@@ -229,7 +229,7 @@ async def recipe_crafter(description: str):
 
     cost_estimate_response = await cost_estimate_chain.ainvoke(
         {
-            # "ingredients": recipe_response.ingredients,
+            "ingredients": recipe_response.ingredients,
             "servings": recipe_response.number_of_servings,
         }
     )
