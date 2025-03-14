@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Response
+from fastapi.responses import StreamingResponse
 from runware import Runware, IImageInference
 from langchain_groq import ChatGroq
 from langchain_anthropic import ChatAnthropic
@@ -8,12 +9,16 @@ from pydantic import create_model as create_pydantic_model
 from dotenv import load_dotenv
 from os import environ
 from base64 import b64decode
+import json
 
 
 load_dotenv()
 
 small_model = ChatGroq(model_name=environ.get("SMALL_MODEL_NAME"))
-large_model = ChatAnthropic(model_name=environ.get("LARGE_MODEL_NAME"))
+large_model = ChatAnthropic(
+    model_name=environ.get("LARGE_MODEL_NAME"), 
+    max_tokens_to_sample=8000 # 8000 so that the model can do chain of thought
+)  
 
 runware = Runware(api_key=environ.get("RUNWARE_KEY"))
 
@@ -83,7 +88,9 @@ async def suggestions(description: str):
 @app.get("/saus/ideate")
 async def ideate(idea: str):
     parser = PydanticOutputParser(
-        pydantic_object=create_pydantic_model("Description", description=(str, ...))
+        pydantic_object=create_pydantic_model(
+            "Description", description=(str, ...), title=(str, ...)
+        )
     )
 
     prompt = PromptTemplate.from_file(
@@ -95,14 +102,16 @@ async def ideate(idea: str):
     chain = prompt | small_model | parser
 
     response = await chain.ainvoke({"idea": idea})
-    return {"description": response.description}
+    return {"description": response.description, "title": response.title}
 
 
 @app.get("/saus/modify")
 async def modify(description: str, modification: str):
     parser = PydanticOutputParser(
         pydantic_object=create_pydantic_model(
-            "RefinedDescription", refined_description=(str, ...)
+            "RefinedDescription",
+            refined_description=(str, ...),
+            refined_title=(str, ...),
         )
     )
 
@@ -119,8 +128,126 @@ async def modify(description: str, modification: str):
             "idea": f"Their original dish: {description}\n\nModifications they asked for: {modification}"
         }
     )
-    return {"description": response.refined_description}
+    return {
+        "description": response.refined_description,
+        "title": response.refined_title,
+    }
 
+
+async def recipe_crafter(description: str):
+    # Craft a step-by-step recipe from a description with ingredients in a separate array and steps in a separate array
+    recipe_parser = PydanticOutputParser(
+        pydantic_object=create_pydantic_model(
+            "Recipe",
+            ingredients=(list[str], ...),
+            steps=(list[str], ...),
+            minutes_required=(int, ...),
+            number_of_servings=(int, ...),
+        )
+    )
+
+    recipe_prompt = PromptTemplate.from_file(
+        "prompts/generate-recipe.md",
+        input_variables=["description"],
+        partial_variables={
+            "format_instructions": recipe_parser.get_format_instructions()
+        },
+    )
+
+    recipe_chain = recipe_prompt | large_model | recipe_parser
+
+    recipe_response = await recipe_chain.ainvoke({"description": description})
+
+    yield "event: recipe\ndata: " + json.dumps(
+        {
+            "ingredients": recipe_response.ingredients,
+            "steps": recipe_response.steps,
+            "minutes_required": recipe_response.minutes_required,
+            "number_of_servings": recipe_response.number_of_servings,
+        }
+    ) + "\n\n"
+
+    nutrition_parser = PydanticOutputParser(
+        pydantic_object=create_pydantic_model(
+            "NutritionFacts",
+            ingredients=(dict[str, str], ...),
+            total_calories=(float, ...),
+            total_fat=(float, ...),
+            total_protein=(float, ...),
+            total_carbs=(float, ...),
+            total_sugar=(float, ...),
+        )
+    )
+
+    nutrition_prompt = PromptTemplate.from_file(
+        "prompts/nutrition-estimate.md",
+        input_variables=["ingredients"],
+        partial_variables={
+            "format_instructions": nutrition_parser.get_format_instructions()
+        },
+    )
+
+    nutrition_chain = nutrition_prompt | large_model | nutrition_parser
+
+    nutrition_response = await nutrition_chain.ainvoke(
+        {
+            "ingredients": recipe_response.ingredients,
+            "servings": recipe_response.number_of_servings,
+        }
+    )
+
+    yield "event: nutrition\ndata: " + json.dumps(
+        {
+            "ingredients": nutrition_response.ingredients,
+            "total_calories": nutrition_response.total_calories,
+            "total_fat": nutrition_response.total_fat,
+            "total_protein": nutrition_response.total_protein,
+            "total_carbs": nutrition_response.total_carbs,
+            "total_sugar": nutrition_response.total_sugar,
+        }
+    ) + "\n\n"
+
+    cost_estimate_parser = PydanticOutputParser(
+        pydantic_object=create_pydantic_model(
+            "CostEstimate",
+            ingredients=(dict[str, str], ...),
+            total_cost=(float, ...),
+        )
+    )
+
+    cost_estimate_prompt = PromptTemplate.from_file(
+        "prompts/cost-estimate.md",
+        input_variables=["ingredients"],
+        partial_variables={
+            "format_instructions": cost_estimate_parser.get_format_instructions()
+        },
+    )
+
+    cost_estimate_chain = cost_estimate_prompt | large_model | cost_estimate_parser
+
+    cost_estimate_response = await cost_estimate_chain.ainvoke(
+        {
+            "ingredients": recipe_response.ingredients,
+            "servings": recipe_response.number_of_servings,
+        }
+    )
+
+    yield "event: cost\ndata: " + json.dumps(
+        {
+            "ingredients": cost_estimate_response.ingredients,
+            "total_ingredients_cost": cost_estimate_response.total_cost,
+            "total_cost_labour": 12 * recipe_response.minutes_required / 60,
+            "total_cost": cost_estimate_response.total_cost
+            + 12 * recipe_response.minutes_required / 60,
+        }
+    ) + "\n\n"
+
+
+@app.get("/saus/craft")
+async def craft(description: str):
+    return StreamingResponse(
+        recipe_crafter(description), media_type="text/event-stream"
+    )
 
 
 if __name__ == "__main__":
