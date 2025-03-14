@@ -95,7 +95,7 @@ async def ideate(idea: str):
 
     chain = prompt | small_model | parser
 
-    response = chain.ainvoke({"idea": idea})
+    response = await chain.ainvoke({"idea": idea})
     return {"description": response.description}
 
 
@@ -115,7 +115,7 @@ async def modify(description: str, modification: str):
 
     chain = prompt | small_model | parser
 
-    response = chain.ainvoke(
+    response = await chain.ainvoke(
         {
             "idea": f"Their original dish: {description}\n\nModifications they asked for: {modification}"
         }
